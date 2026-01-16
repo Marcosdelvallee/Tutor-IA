@@ -1,0 +1,10 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tutor-ia"
+version = "1.0.0"
+description = "AI Tutor for studying PDFs"
+readme = "README.md"
+requires-python = ">=3.10"

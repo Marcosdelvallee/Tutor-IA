@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📚 Tutor IA - Estudia con tus PDFs</title>
+
+    <!-- MathJax for LaTeX -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        /* Dark Theme (default) */
+        :root {
+            --primary: #E50000;
+            --primary-dark: #CC0000;
+            --primary-light: #FF3333;
+            --bg-dark: #0D0D0D;
+            --bg-card: #1A1A1A;
+            --bg-hover: #252525;
+            --text-primary: #FFFFFF;
+            --text-secondary: #9A9A9A;
+            --text-muted: #6B6B6B;
+            --border: #2A2A2A;
+            --success: #22C55E;
+            --error: #EF4444;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Light Theme */
+        [data-theme="light"] {
+            --primary: #DC0000;
+            --primary-dark: #B30000;
+            --primary-light: #FF4444;
+            --bg-dark: #F5F5F5;
+            --bg-card: #FFFFFF;
+            --bg-hover: #EEEEEE;
+            --text-primary: #1A1A1A;
+            --text-secondary: #666666;
+            --text-muted: #999999;
+            --border: #E0E0E0;
+            --success: #16A34A;
+            --error: #DC2626;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Global transitions for smooth theme change */
+        body,
+        .sidebar,
+        .main-content,
+        .tab-content,
+        .message,
+        .flashcard-front,
+        .flashcard-back,
+        input,
+        textarea,
+        button,
+        select {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Sidebar - Sleek Dark */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-card);
+            padding: 24px 16px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+        }
+
+        .sidebar h3 {
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sidebar-btn {
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+        }
+
+        .chat-list {
+            margin-top: 16px;
+        }
+
+        .chat-item {
+            padding: 14px 16px;
+            background: transparent;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid transparent;
+        }
+
+        .chat-item:hover {
+            background: var(--bg-hover);
+        }
+
+        .chat-item.active {
+            background: var(--bg-hover);
+            border-color: var(--primary);
+        }
+
+        .chat-item-title {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .chat-item-delete {
+            color: var(--text-muted);
+            padding: 4px 8px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .chat-item:hover .chat-item-delete {
+            opacity: 1;
+        }
+
+        .chat-item-delete:hover {
+            color: var(--error);
+        }
+
+        .chat-item-date {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Main content */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            min-height: 100vh;
+            background: var(--bg-dark);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 32px 40px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0 32px;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Tabs - Minimal */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin: 32px 0;
+            justify-content: center;
+            background: var(--bg-card);
+            padding: 6px;
+            border-radius: 12px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-hover);
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .tab-content {
+            display: none;
+            background: var(--bg-card);
+            padding: 32px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Chat styles */
+        #chat-messages {
+            height: 450px;
+            overflow-y: auto;
+            padding: 24px;
+            background: var(--bg-dark);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .message {
+            margin-bottom: 20px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            line-height: 1.6;
+        }
+
+        .message.user {
+            background: var(--primary);
+            margin-left: 25%;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant {
+            background: var(--bg-hover);
+            margin-right: 25%;
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+        }
+
+        .sources {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        input[type="text"],
+        textarea {
+            flex: 1;
+            padding: 16px 20px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        button {
+            padding: 16px 28px;
+            border: none;
+            border-radius: 12px;
+            background: var(--primary);
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+        }
+
+        /* Exam styles */
+        .exam-controls {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 32px;
+            align-items: center;
+        }
+
+        .question-card {
+            background: var(--bg-dark);
+            padding: 28px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+        }
+
+        .question-text {
+            font-size: 1.05rem;
+            margin-bottom: 24px;
+            line-height: 1.7;
+            color: var(--text-primary);
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: var(--bg-hover);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .option:hover {
+            border-color: var(--primary);
+        }
+
+        .option input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+
+        .correct {
+            background: rgba(34, 197, 94, 0.15) !important;
+            border: 1px solid var(--success) !important;
+        }
+
+        .wrong {
+            background: rgba(239, 68, 68, 0.15) !important;
+            border: 1px solid var(--error) !important;
+        }
+
+        .explanation {
+            margin-top: 16px;
+            padding: 20px;
+            background: var(--bg-hover);
+            border-radius: 10px;
+            border-left: 3px solid var(--primary);
+            color: var(--text-secondary);
+        }
+
+        /* Upload styles */
+        .upload-zone {
+            border: 2px dashed var(--border);
+            padding: 60px;
+            text-align: center;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--primary);
+            background: rgba(229, 0, 0, 0.05);
+        }
+
+        .upload-zone input {
+            display: none;
+        }
+
+        .upload-zone h3 {
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .upload-zone p {
+            color: var(--text-muted);
+        }
+
+        .score-display {
+            text-align: center;
+            padding: 40px;
+            background: var(--bg-dark);
+            border-radius: 16px;
+            margin-top: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .score-display h2 {
+            font-size: 3.5rem;
+            margin-bottom: 12px;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 24px;
+        }
+
+        .spinner {
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        select {
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        select option {
+            background: var(--bg-card);
+        }
+
+        /* Flashcard styles */
+        .flashcard-controls {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 32px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .flashcard-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 350px;
+        }
+
+        .flashcard {
+            width: 520px;
+            height: 320px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .flashcard.flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-front,
+        .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 36px;
+            text-align: center;
+        }
+
+        .flashcard-front {
+            background: linear-gradient(145deg, var(--primary) 0%, var(--primary-dark) 100%);
+            box-shadow: 0 20px 60px rgba(229, 0, 0, 0.3);
+        }
+
+        .flashcard-back {
+            background: linear-gradient(145deg, var(--success) 0%, #16A34A 100%);
+            transform: rotateY(180deg);
+            box-shadow: 0 20px 60px rgba(34, 197, 94, 0.3);
+        }
+
+        .flashcard-text {
+            font-size: 1.25rem;
+            line-height: 1.7;
+            font-weight: 500;
+        }
+
+        .flashcard-category {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .flashcard-hint {
+            position: absolute;
+            bottom: 16px;
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .flashcard-nav {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 32px;
+        }
+
+        .flashcard-progress {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* Labels */
+        label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            border-color: var(--primary);
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: var(--primary);
+            border: none;
+            cursor: pointer;
+            z-index: 1001;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .mobile-menu-btn span {
+            display: block;
+            width: 24px;
+            height: 3px;
+            background: white;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-btn.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .mobile-menu-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-btn.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+        }
+
+        /* Sidebar Overlay (mobile) */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        .tab-content.active {
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message {
+            animation: slideIn 0.3s ease;
+        }
+
+        .chat-item {
+            animation: fadeIn 0.2s ease;
+        }
+
+        .flashcard:hover {
+            animation: pulse 0.5s ease;
+        }
+
+        /* Responsive - Tablet */
+        @media (max-width: 1024px) {
+            .container {
+                padding: 20px;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab-btn {
+                padding: 10px 16px;
+                font-size: 0.85rem;
+            }
+
+            .flashcard {
+                width: 400px;
+                height: 280px;
+            }
+        }
+
+        /* Responsive - Mobile */
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 1000;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .theme-toggle {
+                top: 20px;
+                right: 80px;
+            }
+
+            header h1 {
+                font-size: 1.8rem;
+                margin-top: 60px;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+                gap: 8px;
+                padding: 8px;
+            }
+
+            .tab-btn {
+                padding: 10px 14px;
+                font-size: 0.8rem;
+            }
+
+            .tab-content {
+                padding: 20px;
+            }
+
+            #chat-messages {
+                height: 350px;
+            }
+
+            .message {
+                margin-left: 5% !important;
+                margin-right: 5% !important;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            .input-group button {
+                width: 100%;
+            }
+
+            .flashcard {
+                width: 100%;
+                max-width: 350px;
+                height: 250px;
+            }
+
+            .flashcard-text {
+                font-size: 1rem;
+            }
+
+            .flashcard-nav {
+                flex-wrap: wrap;
+            }
+
+            .flashcard-nav button {
+                padding: 12px 20px;
+                font-size: 0.85rem;
+            }
+
+            .exam-controls {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .question-card {
+                padding: 20px;
+            }
+        }
+
+        /* Responsive - Small Mobile */
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            .tabs {
+                gap: 6px;
+            }
+
+            .tab-btn {
+                padding: 8px 12px;
+                font-size: 0.75rem;
+            }
+
+            .flashcard {
+                height: 220px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- MOBILE MENU BUTTON -->
+    <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- THEME TOGGLE -->
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">🌙</button>
+
+    <!-- SIDEBAR OVERLAY (mobile) -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobileMenu()"></div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+        <h3>💬 Conversaciones</h3>
+        <button class="sidebar-btn" onclick="createNewChat()">➕ Nuevo Chat</button>
+        <div class="chat-list" id="chat-list">
+            <!-- Chat sessions will be listed here -->
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="container">
+            <header>
+                <h1>Tutor IA</h1>
+                <p>Estudia con tus PDFs</p>
+            </header>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="showTab('chat')">💬 Preguntar</button>
+                <button class="tab-btn" onclick="showTab('flashcards')">📇 Flashcards</button>
+                <button class="tab-btn" onclick="showTab('exam')">📋 Examen</button>
+                <button class="tab-btn" onclick="showTab('correct')">✍️ Corregir</button>
+                <button class="tab-btn" onclick="showTab('manage')">🗂️ PDFs</button>
+                <button class="tab-btn" onclick="showTab('upload')">📤 Subir</button>
+            </div>
+
+            <!-- CHAT TAB -->
+            <div id="chat" class="tab-content active">
+                <div id="chat-messages">
+                    <div class="message assistant">
+                        <p>¡Hola! Soy tu tutor de IA. Pregúntame sobre el contenido de tus PDFs.</p>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="question-input" placeholder="Escribe tu pregunta..."
+                        onkeypress="if(event.key==='Enter')sendQuestion()">
+                    <button onclick="sendQuestion()">Enviar</button>
+                </div>
+                <div style="display:flex; gap:10px; margin-top:15px; justify-content:center;">
+                    <button onclick="clearChat()" style="background:rgba(255,255,255,0.1); padding:10px 20px;">🗑️
+                        Limpiar
+                        Chat</button>
+                    <button onclick="exportChat()" style="background:rgba(255,255,255,0.1); padding:10px 20px;">💾
+                        Exportar</button>
+                </div>
+                <div id="chat-loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Buscando en el material...</p>
+                </div>
+            </div>
+
+            <!-- EXAM TAB -->
+            <div id="exam" class="tab-content">
+                <div class="exam-controls">
+                    <label>Preguntas:</label>
+                    <select id="num-questions">
+                        <option value="3">3</option>
+                        <option value="5" selected>5</option>
+                        <option value="10">10</option>
+                    </select>
+                    <label>Dificultad:</label>
+                    <select id="exam-difficulty">
+                        <option value="facil">😊 Fácil</option>
+                        <option value="medio">🤔 Medio</option>
+                        <option value="dificil" selected>😰 Difícil</option>
+                        <option value="extremo">💀 Extremo</option>
+                    </select>
+                    <button onclick="generateExam()">📝 Generar Examen</button>
+                    <button onclick="gradeExam()" id="grade-btn" style="display:none;">✅ Calificar</button>
+                </div>
+                <div id="exam-loading" class="loading">
+                    <div class="spinner"></div>
+                </div>
+                <div id="exam-questions"></div>
+                <div id="exam-results"></div>
+            </div>
+
+            <!-- FLASHCARDS TAB -->
+            <div id="flashcards" class="tab-content">
+                <div class="flashcard-controls">
+                    <label>Cantidad:</label>
+                    <select id="num-cards">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="15">15</option>
+                        <option value="20">20</option>
+                    </select>
+                    <button onclick="generateFlashcards()">📇 Generar Flashcards</button>
+                </div>
+                <div id="flashcard-loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Creando tarjetas de estudio...</p>
+                </div>
+                <div id="flashcard-area" style="display:none;">
+                    <div class="flashcard-container">
+                        <div class="flashcard" onclick="flipCard()">
+                            <div class="flashcard-inner">
+                                <div class="flashcard-front">
+                                    <span class="flashcard-category" id="card-category"></span>
+                                    <div class="flashcard-text" id="card-front"></div>
+                                    <span class="flashcard-hint">Click para ver respuesta</span>
+                                </div>
+                                <div class="flashcard-back">
+                                    <div class="flashcard-text" id="card-back"></div>
+                                    <span class="flashcard-hint">Click para volver</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flashcard-nav">
+                        <button onclick="prevCard()">⬅️ Anterior</button>
+                        <button onclick="markKnown()" style="background: #28a745;">✓ Lo sé</button>
+                        <button onclick="markUnknown()" style="background: #dc3545;">✗ Repasar</button>
+                        <button onclick="nextCard()">Siguiente ➡️</button>
+                    </div>
+                    <div class="flashcard-progress">
+                        <span id="card-counter">1 / 10</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill" style="width: 10%;"></div>
+                        </div>
+                        <p id="known-counter" style="margin-top: 10px;">✓ Dominadas: 0 | ✗ Por repasar: 0</p>
+                    </div>
+                    <div id="flashcard-complete"
+                        style="display:none; text-align:center; margin-top:30px; padding:30px; background:rgba(102,126,234,0.2); border-radius:15px;">
+                        <h2>🎉 ¡Terminaste!</h2>
+                        <p id="final-stats" style="font-size:1.2rem; margin:20px 0;"></p>
+                        <button onclick="generateFlashcards()" style="margin-top:15px;">🔄 Generar Nuevas
+                            Flashcards</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUMMARY TAB -->
+            <div id="summary" class="tab-content">
+                <div style="text-align:center; margin-bottom:20px;">
+                    <h3>📝 Resumen Completo del Material</h3>
+                    <p>Genera un resumen exhaustivo y detallado de todos tus PDFs</p>
+                    <button onclick="generateSummary()" style="margin-top:15px;">📝 Generar Resumen Completo</button>
+                </div>
+                <div id="summary-loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Generando resumen completo... (puede tomar unos segundos)</p>
+                </div>
+                <div id="summary-content"
+                    style="display:none; background:rgba(255,255,255,0.05); padding:25px; border-radius:12px; line-height:1.8;">
+                </div>
+            </div>
+
+            <!-- IMAGE CORRECTION TAB -->
+            <div id="correct" class="tab-content">
+                <div style="text-align:center; margin-bottom:20px;">
+                    <h3>✍️ Corrección de Soluciones</h3>
+                    <p>Describe tu solución o sube una imagen para recibir feedback</p>
+                </div>
+                <div style="max-width:600px; margin:0 auto;">
+                    <label style="display:block; margin-bottom:10px;">Tema o tipo de problema:</label>
+                    <input type="text" id="correction-topic"
+                        placeholder="Ej: Método del trapecio, Integración numérica..."
+                        style="width:100%; margin-bottom:20px;">
+
+                    <label style="display:block; margin-bottom:10px;">Describe tu solución (opcional):</label>
+                    <textarea id="correction-description"
+                        placeholder="Describe los pasos que seguiste o el resultado que obtuviste..."
+                        style="width:100%; height:100px; margin-bottom:20px;"></textarea>
+
+                    <label style="display:block; margin-bottom:10px;">O sube una imagen de tu solución:</label>
+                    <div class="upload-zone" onclick="document.getElementById('correction-image').click()"
+                        style="padding:30px;">
+                        <input type="file" id="correction-image" accept="image/*" style="display:none;">
+                        <p>📷 Click para subir imagen</p>
+                    </div>
+                    <p id="correction-image-name" style="margin-top:10px; color:#aaa;"></p>
+
+                    <button onclick="submitCorrection()" style="width:100%; margin-top:20px;">✅ Obtener
+                        Feedback</button>
+                </div>
+                <div id="correction-loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Analizando...</p>
+                </div>
+                <div id="correction-result"
+                    style="display:none; margin-top:20px; background:rgba(255,255,255,0.05); padding:25px; border-radius:12px; line-height:1.8;">
+                </div>
+            </div>
+
+            <!-- PDF MANAGEMENT TAB -->
+            <div id="manage" class="tab-content">
+                <div style="text-align:center; margin-bottom:20px;">
+                    <h3>🗂️ Gestión de PDFs Indexados</h3>
+                    <p>Ver y eliminar documentos de la base de datos</p>
+                    <button onclick="loadPdfList()" style="margin-top:15px;">🔄 Actualizar Lista</button>
+                </div>
+                <div id="pdf-loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Cargando lista de PDFs...</p>
+                </div>
+                <div id="pdf-list" style="margin-top:20px;">
+                    <!-- PDFs will be listed here -->
+                </div>
+            </div>
+
+            <!-- UPLOAD TAB -->
+            <div id="upload" class="tab-content">
+                <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+                    <input type="file" id="file-input" accept=".pdf" onchange="uploadFile()">
+                    <h3>📄 Arrastra tu PDF aquí o haz clic</h3>
+                    <p>Solo archivos PDF</p>
+                </div>
+                <div id="upload-loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Procesando PDF...</p>
+                </div>
+                <div id="upload-result"></div>
+            </div>
+        </div>
+
+        <script>
+            let currentQuestions = [];
+            let flashcards = [];
+            let currentCardIndex = 0;
+            let knownCards = 0;
+            let unknownCards = 0;
+
+            // Multi-session chat management
+            let chatSessions = {};
+            let currentChatId = null;
+
+            // ===== THEME TOGGLE =====
+            function toggleTheme() {
+                const body = document.body;
+                const toggle = document.getElementById('theme-toggle');
+
+                if (body.getAttribute('data-theme') === 'light') {
+                    body.removeAttribute('data-theme');
+                    toggle.textContent = '🌙';
+                    localStorage.setItem('tutorIA_theme', 'dark');
+                } else {
+                    body.setAttribute('data-theme', 'light');
+                    toggle.textContent = '☀️';
+                    localStorage.setItem('tutorIA_theme', 'light');
+                }
+            }
+
+            function loadSavedTheme() {
+                const savedTheme = localStorage.getItem('tutorIA_theme');
+                const toggle = document.getElementById('theme-toggle');
+
+                if (savedTheme === 'light') {
+                    document.body.setAttribute('data-theme', 'light');
+                    toggle.textContent = '☀️';
+                }
+            }
+
+            // ===== MOBILE MENU =====
+            function toggleMobileMenu() {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebar-overlay');
+                const btn = document.getElementById('mobile-menu-btn');
+
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+                btn.classList.toggle('active');
+            }
+
+            function closeMobileMenu() {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebar-overlay');
+                const btn = document.getElementById('mobile-menu-btn');
+
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+                btn.classList.remove('active');
+            }
+
+            // Load theme and chat sessions on page load
+            window.addEventListener('load', () => {
+                loadSavedTheme();
+                initChatSessions();
+            });
+
+            function initChatSessions() {
+                const saved = localStorage.getItem('tutorIA_chatSessions');
+                if (saved) {
+                    chatSessions = JSON.parse(saved);
+                    const ids = Object.keys(chatSessions);
+                    if (ids.length > 0) {
+                        currentChatId = ids[ids.length - 1]; // Last chat
+                        loadChat(currentChatId);
+                    } else {
+                        createNewChat();
+                    }
+                } else {
+                    createNewChat();
+                }
+                renderChatList();
+            }
+
+            function createNewChat() {
+                const id = 'chat_' + Date.now();
+                chatSessions[id] = {
+                    id: id,
+                    title: 'Nuevo Chat',
+                    messages: [],
+                    createdAt: new Date().toISOString()
+                };
+                currentChatId = id;
+                saveAllChats();
+                renderChatList();
+                clearChatArea();
+                closeMobileMenu(); // Close sidebar on mobile
+            }
+
+            function loadChat(chatId) {
+                currentChatId = chatId;
+                const chat = chatSessions[chatId];
+                if (!chat) return;
+
+                const messagesEl = document.getElementById('chat-messages');
+                messagesEl.innerHTML = `
+                    <div class="message assistant">
+                        <p>¡Hola! Soy tu tutor de IA. Pregúntame sobre el contenido de tus PDFs.</p>
+                    </div>
+                `;
+
+                chat.messages.forEach(msg => {
+                    if (msg.role === 'user') {
+                        messagesEl.innerHTML += `<div class="message user"><p>${msg.content}</p></div>`;
+                    } else {
+                        messagesEl.innerHTML += `<div class="message assistant">
+                            <div>${msg.content.replace(/\n/g, '<br>')}</div>
+                            ${msg.sources?.length ? `<div class="sources">📄 Fuentes: ${msg.sources.join(', ')}</div>` : ''}
+                        </div>`;
+                    }
+                });
+
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+                renderChatList();
+                MathJax.typesetPromise();
+                closeMobileMenu(); // Close sidebar on mobile
+            }
+
+            function deleteChat(chatId, event) {
+                event.stopPropagation();
+                if (!confirm('¿Eliminar esta conversación?')) return;
+
+                delete chatSessions[chatId];
+                saveAllChats();
+
+                const ids = Object.keys(chatSessions);
+                if (ids.length > 0) {
+                    loadChat(ids[ids.length - 1]);
+                } else {
+                    createNewChat();
+                }
+                renderChatList();
+            }
+
+            function renderChatList() {
+                const listEl = document.getElementById('chat-list');
+                const ids = Object.keys(chatSessions).reverse(); // Newest first
+
+                if (ids.length === 0) {
+                    listEl.innerHTML = '<p style="color:#888; font-size:0.85rem;">No hay conversaciones</p>';
+                    return;
+                }
+
+                listEl.innerHTML = ids.map(id => {
+                    const chat = chatSessions[id];
+                    const isActive = id === currentChatId;
+                    const date = new Date(chat.createdAt).toLocaleDateString();
+                    const title = chat.title.substring(0, 25) + (chat.title.length > 25 ? '...' : '');
+
+                    return `
+                        <div class="chat-item ${isActive ? 'active' : ''}" onclick="loadChat('${id}')">
+                            <div>
+                                <div class="chat-item-title">${title}</div>
+                                <div class="chat-item-date">${date} · ${chat.messages.length} msgs</div>
+                            </div>
+                            <span class="chat-item-delete" onclick="deleteChat('${id}', event)">🗑️</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            function saveAllChats() {
+                localStorage.setItem('tutorIA_chatSessions', JSON.stringify(chatSessions));
+            }
+
+            function clearChatArea() {
+                document.getElementById('chat-messages').innerHTML = `
+                    <div class="message assistant">
+                        <p>¡Hola! Soy tu tutor de IA. Pregúntame sobre el contenido de tus PDFs.</p>
+                    </div>
+                `;
+            }
+
+            function showTab(tabId) {
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById(tabId).classList.add('active');
+                event.target.classList.add('active');
+            }
+
+            async function sendQuestion() {
+                const input = document.getElementById('question-input');
+                const question = input.value.trim();
+                if (!question) return;
+
+                const messages = document.getElementById('chat-messages');
+                messages.innerHTML += `<div class="message user"><p>${question}</p></div>`;
+                input.value = '';
+
+                // Save to current chat
+                if (currentChatId && chatSessions[currentChatId]) {
+                    chatSessions[currentChatId].messages.push({
+                        role: 'user',
+                        content: question,
+                        timestamp: new Date().toISOString()
+                    });
+
+                    // Update chat title if first message
+                    if (chatSessions[currentChatId].messages.length === 1) {
+                        chatSessions[currentChatId].title = question.substring(0, 40);
+                        renderChatList();
+                    }
+                }
+
+                document.getElementById('chat-loading').style.display = 'block';
+
+                try {
+                    const response = await fetch('/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ question })
+                    });
+                    const data = await response.json();
+
+                    let answerHtml = `<div class="message assistant">
+                    <div>${data.answer.replace(/\n/g, '<br>')}</div>
+                    ${data.sources?.length ? `<div class="sources">📄 Fuentes: ${data.sources.join(', ')}</div>` : ''}
+                </div>`;
+
+                    messages.innerHTML += answerHtml;
+                    messages.scrollTop = messages.scrollHeight;
+
+                    // Save to current chat
+                    if (currentChatId && chatSessions[currentChatId]) {
+                        chatSessions[currentChatId].messages.push({
+                            role: 'assistant',
+                            content: data.answer,
+                            sources: data.sources,
+                            timestamp: new Date().toISOString()
+                        });
+                        saveAllChats();
+                        renderChatList();
+                    }
+
+                    // Re-render MathJax
+                    MathJax.typesetPromise();
+                } catch (e) {
+                    messages.innerHTML += `<div class="message assistant"><p>Error: ${e.message}</p></div>`;
+                }
+
+                document.getElementById('chat-loading').style.display = 'none';
+            }
+
+            function clearChat() {
+                if (!confirm('¿Limpiar esta conversación?')) return;
+                if (currentChatId && chatSessions[currentChatId]) {
+                    chatSessions[currentChatId].messages = [];
+                    chatSessions[currentChatId].title = 'Chat vacío';
+                    saveAllChats();
+                    renderChatList();
+                }
+                clearChatArea();
+                MathJax.typesetPromise();
+            }
+
+            function exportChat() {
+                if (!currentChatId || !chatSessions[currentChatId]) {
+                    alert('No hay chat para exportar');
+                    return;
+                }
+
+                const chat = chatSessions[currentChatId];
+                if (chat.messages.length === 0) {
+                    alert('No hay mensajes para exportar');
+                    return;
+                }
+
+                let text = '📚 TUTOR IA - ' + chat.title + '\n';
+                text += '='.repeat(40) + '\n\n';
+
+                chat.messages.forEach(msg => {
+                    const date = new Date(msg.timestamp).toLocaleString();
+                    if (msg.role === 'user') {
+                        text += `👤 TÚ (${date}):\n${msg.content}\n\n`;
+                    } else {
+                        text += `🤖 TUTOR (${date}):\n${msg.content}\n`;
+                        if (msg.sources?.length) {
+                            text += `📄 Fuentes: ${msg.sources.join(', ')}\n`;
+                        }
+                        text += '\n';
+                    }
+                });
+
+                // Download as file
+                const blob = new Blob([text], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `chat_${chat.title.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().slice(0, 10)}.txt`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            async function generateExam() {
+                const numQuestions = document.getElementById('num-questions').value;
+                const difficulty = document.getElementById('exam-difficulty').value;
+                const container = document.getElementById('exam-questions');
+                const results = document.getElementById('exam-results');
+
+                container.innerHTML = '';
+                results.innerHTML = '';
+                document.getElementById('exam-loading').style.display = 'block';
+                document.getElementById('grade-btn').style.display = 'none';
+
+                try {
+                    const response = await fetch('/exam', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            num_questions: parseInt(numQuestions),
+                            type: 'multiple_choice',
+                            difficulty: difficulty
+                        })
+                    });
+                    const data = await response.json();
+                    currentQuestions = data.questions || [];
+
+                    if (currentQuestions.length === 0) {
+                        container.innerHTML = '<p>No se pudieron generar preguntas. Intenta de nuevo.</p>';
+                        return;
+                    }
+
+                    currentQuestions.forEach((q, i) => {
+                        const optionsHtml = (q.options || []).map((opt, j) =>
+                            `<label class="option">
+                            <input type="radio" name="q${i}" value="${opt.charAt(0)}">
+                            <span>${opt}</span>
+                        </label>`
+                        ).join('');
+
+                        container.innerHTML += `
+                        <div class="question-card" id="question-${i}">
+                            <div class="question-text"><strong>Pregunta ${i + 1}:</strong> ${q.question}</div>
+                            <div class="options">${optionsHtml}</div>
+                            <div class="explanation" id="exp-${i}" style="display:none;"></div>
+                        </div>
+                    `;
+                    });
+
+                    document.getElementById('grade-btn').style.display = 'inline-block';
+                    MathJax.typesetPromise();
+                } catch (e) {
+                    container.innerHTML = `<p>Error: ${e.message}</p>`;
+                }
+
+                document.getElementById('exam-loading').style.display = 'none';
+            }
+
+            function gradeExam() {
+                let correct = 0;
+                const total = currentQuestions.length;
+
+                currentQuestions.forEach((q, i) => {
+                    const selected = document.querySelector(`input[name="q${i}"]:checked`);
+                    const card = document.getElementById(`question-${i}`);
+                    const expDiv = document.getElementById(`exp-${i}`);
+
+                    const userAnswer = selected ? selected.value : '';
+                    const correctAnswer = q.correct;
+
+                    // Show explanation
+                    expDiv.innerHTML = `<strong>💡 Explicación:</strong><br>${q.explanation || 'No disponible'}`;
+                    expDiv.style.display = 'block';
+
+                    // Highlight correct/wrong
+                    card.querySelectorAll('.option').forEach(opt => {
+                        const optValue = opt.querySelector('input').value;
+                        if (optValue === correctAnswer) {
+                            opt.classList.add('correct');
+                        } else if (optValue === userAnswer && userAnswer !== correctAnswer) {
+                            opt.classList.add('wrong');
+                        }
+                    });
+
+                    if (userAnswer === correctAnswer) correct++;
+                });
+
+                const score = Math.round((correct / total) * 100);
+                document.getElementById('exam-results').innerHTML = `
+                <div class="score-display">
+                    <h2>${score}%</h2>
+                    <p>${correct} de ${total} correctas</p>
+                    <p>${score >= 70 ? '🎉 ¡Aprobado!' : '📚 Sigue estudiando'}</p>
+                </div>
+            `;
+
+                document.getElementById('grade-btn').style.display = 'none';
+                MathJax.typesetPromise();
+            }
+
+            async function uploadFile() {
+                const fileInput = document.getElementById('file-input');
+                const file = fileInput.files[0];
+                if (!file) return;
+
+                document.getElementById('upload-loading').style.display = 'block';
+                document.getElementById('upload-result').innerHTML = '';
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    const response = await fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+
+                    if (data.success) {
+                        document.getElementById('upload-result').innerHTML = `
+                        <div style="background: rgba(40,167,69,0.2); padding: 20px; border-radius: 10px; margin-top: 20px;">
+                            <h3>✅ PDF procesado exitosamente</h3>
+                            <p>📄 ${file.name}</p>
+                            <p>📝 ${data.pages} páginas, ${data.chunks} fragmentos indexados</p>
+                            <p><em>Recarga la página para ver los cambios</em></p>
+                        </div>
+                    `;
+                    } else {
+                        document.getElementById('upload-result').innerHTML = `
+                        <div style="background: rgba(220,53,69,0.2); padding: 20px; border-radius: 10px; margin-top: 20px;">
+                            <h3>❌ Error</h3>
+                            <p>${data.error}</p>
+                        </div>
+                    `;
+                    }
+                } catch (e) {
+                    document.getElementById('upload-result').innerHTML = `<p>Error: ${e.message}</p>`;
+                }
+
+                document.getElementById('upload-loading').style.display = 'none';
+                fileInput.value = '';
+            }
+
+            // FLASHCARD FUNCTIONS
+            async function generateFlashcards() {
+                const numCards = document.getElementById('num-cards').value;
+                document.getElementById('flashcard-loading').style.display = 'block';
+                document.getElementById('flashcard-area').style.display = 'none';
+                document.getElementById('flashcard-complete').style.display = 'none';
+
+                try {
+                    const response = await fetch('/flashcards', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ num_cards: parseInt(numCards) })
+                    });
+                    const data = await response.json();
+                    flashcards = data.cards || [];
+
+                    if (flashcards.length === 0) {
+                        alert('No se pudieron generar flashcards. Intenta de nuevo.');
+                        return;
+                    }
+
+                    currentCardIndex = 0;
+                    knownCards = 0;
+                    unknownCards = 0;
+                    document.getElementById('flashcard-area').style.display = 'block';
+                    document.querySelector('.flashcard-container').style.display = 'flex';
+                    document.querySelector('.flashcard-nav').style.display = 'flex';
+                    showCard();
+                } catch (e) {
+                    alert('Error: ' + e.message);
+                }
+
+                document.getElementById('flashcard-loading').style.display = 'none';
+            }
+
+            function showCard() {
+                if (flashcards.length === 0) return;
+
+                const card = flashcards[currentCardIndex];
+                document.getElementById('card-front').innerHTML = card.front;
+                document.getElementById('card-back').innerHTML = card.back;
+                document.getElementById('card-category').textContent = card.category || 'General';
+
+                // Reset flip state
+                document.querySelector('.flashcard').classList.remove('flipped');
+
+                // Update counter
+                document.getElementById('card-counter').textContent = `${currentCardIndex + 1} / ${flashcards.length}`;
+                document.getElementById('progress-fill').style.width = `${((currentCardIndex + 1) / flashcards.length) * 100}%`;
+                document.getElementById('known-counter').textContent = `✓ Dominadas: ${knownCards} | ✗ Por repasar: ${unknownCards}`;
+
+                MathJax.typesetPromise();
+            }
+
+            function flipCard() {
+                document.querySelector('.flashcard').classList.toggle('flipped');
+            }
+
+            function nextCard() {
+                if (currentCardIndex < flashcards.length - 1) {
+                    currentCardIndex++;
+                    showCard();
+                } else {
+                    // Terminó - mostrar resumen
+                    showCompletionScreen();
+                }
+            }
+
+            function prevCard() {
+                if (currentCardIndex > 0) {
+                    currentCardIndex--;
+                    showCard();
+                }
+            }
+
+            function markKnown() {
+                knownCards++;
+                nextCard();
+            }
+
+            function markUnknown() {
+                unknownCards++;
+                nextCard();
+            }
+
+            function showCompletionScreen() {
+                // Ocultar la tarjeta y navegación
+                document.querySelector('.flashcard-container').style.display = 'none';
+                document.querySelector('.flashcard-nav').style.display = 'none';
+
+                // Mostrar mensaje de finalización
+                const total = flashcards.length;
+                const pct = Math.round((knownCards / total) * 100);
+                document.getElementById('final-stats').innerHTML = `
+                ✓ Dominadas: <strong>${knownCards}</strong> | 
+                ✗ Por repasar: <strong>${unknownCards}</strong><br>
+                <span style="font-size:2rem; margin-top:10px; display:block;">${pct}% dominado</span>
+            `;
+                document.getElementById('flashcard-complete').style.display = 'block';
+            }
+
+            // =================== SUMMARY FUNCTIONS ===================
+            async function generateSummary() {
+                document.getElementById('summary-loading').style.display = 'block';
+                document.getElementById('summary-content').style.display = 'none';
+
+                try {
+                    const response = await fetch('/summary', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({})
+                    });
+                    const data = await response.json();
+
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                        return;
+                    }
+
+                    document.getElementById('summary-content').innerHTML = `
+                    <div style="margin-bottom:15px; color:#aaa;">📄 Fuentes: ${data.sources?.join(', ') || 'N/A'}</div>
+                    <div>${data.summary.replace(/\n/g, '<br>')}</div>
+                `;
+                    document.getElementById('summary-content').style.display = 'block';
+                    MathJax.typesetPromise();
+                } catch (e) {
+                    alert('Error: ' + e.message);
+                }
+
+                document.getElementById('summary-loading').style.display = 'none';
+            }
+
+            // =================== CORRECTION FUNCTIONS ===================
+            document.getElementById('correction-image').addEventListener('change', function () {
+                const fileName = this.files[0]?.name || '';
+                document.getElementById('correction-image-name').textContent = fileName ? '📷 ' + fileName : '';
+            });
+
+            async function submitCorrection() {
+                const topic = document.getElementById('correction-topic').value || 'matemáticas';
+                const description = document.getElementById('correction-description').value;
+                const imageInput = document.getElementById('correction-image');
+
+                document.getElementById('correction-loading').style.display = 'block';
+                document.getElementById('correction-result').style.display = 'none';
+
+                const formData = new FormData();
+                formData.append('topic', topic);
+
+                if (imageInput.files[0]) {
+                    formData.append('image', imageInput.files[0]);
+                } else {
+                    // Create dummy file to satisfy backend
+                    const blob = new Blob(['dummy'], { type: 'image/png' });
+                    formData.append('image', blob, 'placeholder.png');
+                }
+
+                if (description) {
+                    formData.append('description', description);
+                }
+
+                try {
+                    const response = await fetch('/correct-image', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                        return;
+                    }
+
+                    document.getElementById('correction-result').innerHTML = `
+                    <h4>💡 Feedback del Profesor:</h4>
+                    <div style="margin-top:15px;">${data.feedback.replace(/\n/g, '<br>')}</div>
+                    ${data.note ? `<p style="margin-top:20px; color:#aaa; font-size:0.9rem;">${data.note}</p>` : ''}
+                `;
+                    document.getElementById('correction-result').style.display = 'block';
+                    MathJax.typesetPromise();
+                } catch (e) {
+                    alert('Error: ' + e.message);
+                }
+
+                document.getElementById('correction-loading').style.display = 'none';
+            }
+
+            // =================== PDF MANAGEMENT FUNCTIONS ===================
+            async function loadPdfList() {
+                document.getElementById('pdf-loading').style.display = 'block';
+                document.getElementById('pdf-list').innerHTML = '';
+
+                try {
+                    const response = await fetch('/pdfs');
+                    const data = await response.json();
+
+                    if (data.pdfs.length === 0) {
+                        document.getElementById('pdf-list').innerHTML = `
+                        <p style="text-align:center; color:#aaa;">No hay PDFs indexados. Sube uno en la pestaña "Subir".</p>
+                    `;
+                        return;
+                    }
+
+                    let html = `<p style="margin-bottom:20px;">Total: <strong>${data.total_chunks}</strong> fragmentos indexados</p>`;
+
+                    data.pdfs.forEach(pdf => {
+                        html += `
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:15px 20px; border-radius:10px; margin-bottom:10px;">
+                            <div>
+                                <strong>📄 ${pdf.name}</strong>
+                                <span style="color:#aaa; margin-left:15px;">${pdf.chunks} fragmentos</span>
+                            </div>
+                            <button onclick="deletePdf('${pdf.name}')" style="background:#dc3545; padding:8px 15px;">🗑️ Eliminar</button>
+                        </div>
+                    `;
+                    });
+
+                    document.getElementById('pdf-list').innerHTML = html;
+                } catch (e) {
+                    document.getElementById('pdf-list').innerHTML = `<p style="color:#dc3545;">Error: ${e.message}</p>`;
+                }
+
+                document.getElementById('pdf-loading').style.display = 'none';
+            }
+
+            async function deletePdf(pdfName) {
+                if (!confirm(`¿Eliminar "${pdfName}" y todos sus fragmentos?`)) return;
+
+                try {
+                    const response = await fetch(`/pdfs/${encodeURIComponent(pdfName)}`, {
+                        method: 'DELETE'
+                    });
+                    const data = await response.json();
+
+                    if (data.success) {
+                        alert(`✅ ${data.message}`);
+                        loadPdfList();
+                    } else {
+                        alert('❌ ' + (data.error || 'Error desconocido'));
+                    }
+                } catch (e) {
+                    alert('Error: ' + e.message);
+                }
+            }
+
+            // Auto-load PDF list when switching to manage tab
+            const originalShowTab = showTab;
+            showTab = function (tabId) {
+                originalShowTab.call(this, tabId);
+                if (tabId === 'manage') {
+                    loadPdfList();
+                }
+            };
+        </script>
+</body>
+
+</html>

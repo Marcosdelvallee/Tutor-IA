@@ -1,0 +1,44 @@
+# =============================================================================
+# Tutor IA - Dependencias del Proyecto
+# =============================================================================
+# Instalar con: pip install -r requirements.txt
+# Python 3.10+ requerido
+# =============================================================================
+
+# Web Framework
+flask>=3.0.0
+
+# Orquestación LLM
+langchain>=0.1.0
+langchain-community>=0.0.20
+langchain-google-genai>=1.0.0
+langchain-openai>=0.0.5
+langchain-groq>=0.1.0
+
+# Base de Datos Vectorial
+chromadb>=0.4.22
+
+# Procesamiento de PDFs
+pymupdf>=1.23.0  # También conocido como 'fitz'
+
+# Embeddings y Tokenización
+tiktoken>=0.5.2
+sentence-transformers>=2.2.0
+
+# Google Gemini Vision
+google-generativeai>=0.5.0
+
+# Configuración
+python-dotenv>=1.0.0
+
+# Utilidades
+pydantic>=2.0.0
+tqdm>=4.66.0
+pillow>=10.0.0
+
+# CLI (opcional)
+click>=8.1.0
+rich>=13.0.0
+
+# Production server
+gunicorn>=21.0.0

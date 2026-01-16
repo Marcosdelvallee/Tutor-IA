@@ -1,3 +1,12 @@
+---
+title: Tutor IA
+emoji: 🎓
+colorFrom: red
+colorTo: blue
+sdk: docker
+pinned: false
+---
+
 # 📚 Tutor IA
 
 Un tutor de inteligencia artificial que te ayuda a estudiar tus PDFs con preguntas, flashcards, exámenes y más.

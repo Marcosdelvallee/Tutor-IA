@@ -613,9 +613,11 @@ def delete_pdf(pdf_name):
 
 
 if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))
     print("Inicializando modelos...")
     get_embeddings()
     get_store()
     print(f"Documentos en DB: {get_store().count}")
-    print("\n📚 Tutor IA corriendo en: http://localhost:5000")
-    app.run(debug=True, port=5000)
+    print(f"\n📚 Tutor IA corriendo en: http://localhost:{port}")
+    # En local usamos debug=True, en producción (Hugging Face) se usa Gunicorn
+    app.run(debug=True, host='0.0.0.0', port=port)

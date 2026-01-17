@@ -14,6 +14,12 @@
             tex: {
                 inlineMath: [['$', '$'], ['\\(', '\\)']],
                 displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            chtml: {
+                scale: 0.9
+            },
+            options: {
+                enableMenu: false
             }
         };
     </script>
@@ -59,6 +65,20 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        /* MathJax Responsive Fixes */
+        mjx-container {
+            max-width: 100% !important;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: normal !important;
+        }
+
+        @media (max-width: 768px) {
+            mjx-container {
+                font-size: 0.8rem !important;
+            }
         }
 
         /* Global transitions for smooth theme change */
@@ -303,15 +323,24 @@
             display: block;
         }
 
+        /* Specific override for Chat to be seamless/borderless */
+        #chat {
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+        }
+
+        /* Chat styles */
         /* Chat styles */
         #chat-messages {
-            height: 450px;
+            height: 50vh;
+            min-height: 400px;
             overflow-y: auto;
-            padding: 24px;
-            background: var(--bg-dark);
-            border-radius: 12px;
+            padding: 10px 0;
+            background: transparent;
+            border: none;
             margin-bottom: 20px;
-            border: 1px solid var(--border);
         }
 
         .message {
@@ -319,17 +348,25 @@
             padding: 16px 20px;
             border-radius: 12px;
             line-height: 1.6;
+            overflow-x: auto;
+            /* Scroll for long formulas */
+            max-width: 90%;
+            /* Allow usage of most width */
         }
 
         .message.user {
             background: var(--primary);
-            margin-left: 25%;
+            margin-left: auto;
+            /* Push to right */
+            margin-right: 0;
             border-bottom-right-radius: 4px;
         }
 
         .message.assistant {
             background: var(--bg-hover);
-            margin-right: 25%;
+            margin-right: auto;
+            /* Push to left */
+            margin-left: 0;
             border: 1px solid var(--border);
             border-bottom-left-radius: 4px;
         }

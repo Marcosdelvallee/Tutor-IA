@@ -7,6 +7,7 @@ import os
 import sys
 import json
 import tempfile
+import uuid
 from pathlib import Path
 
 # Setup path
@@ -20,6 +21,13 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+
+@app.before_request
+def ensure_session_id():
+    """Asegura que cada usuario tenga un ID único."""
+    if 'user_id' not in session:
+        session['user_id'] = str(uuid.uuid4())
+        session.permanent = True
 
 # =============================================================================
 # INITIALIZE COMPONENTS
@@ -135,7 +143,9 @@ def invoke_with_fallback(messages, preferred_model=None):
 # =============================================================================
 def search_context(query: str, n_results: int = 5):
     store = get_store()
-    results = store.search(query, n_results=n_results)
+    # 🔒 PRIVACY FIX: Filter by session_id
+    uid = session.get('user_id')
+    results = store.search(query, n_results=n_results, filter_metadata={"session_id": uid} if uid else None)
     if not results:
         return "", []
     
@@ -444,8 +454,12 @@ REGLAS:
 @app.route('/')
 def index():
     store = get_store()
-    doc_count = store.count
-    sources = store.get_sources()
+    # 🔒 PRIVACY FIX: Only count user docs
+    uid = session.get('user_id')
+    filter_meta = {"session_id": uid} if uid else None
+    
+    doc_count = store.count_filtered(filter_meta)
+    sources = store.get_sources(filter_metadata=filter_meta)
     return render_template('index.html', doc_count=doc_count, sources=sources)
 
 
@@ -548,6 +562,13 @@ def upload():
             except Exception as e:
                 print(f"⚠️ Error procesando imágenes: {e}")
         
+        # 🔒 PRIVACY FIX: Inject session_id into chunks
+        current_uid = session.get('user_id')
+        for chunk in chunks:
+            if not chunk.metadata:
+                chunk.metadata = {}
+            chunk.metadata['session_id'] = current_uid
+        
         store = get_store()
         added = store.add_chunks(chunks)
         
@@ -633,13 +654,19 @@ Si el estudiante describe su solución en texto, corrige específicamente eso.""
 def list_pdfs():
     """Lista todos los PDFs indexados."""
     store = get_store()
-    sources = store.get_sources()
+    # 🔒 PRIVACY FIX: Filter by session
+    uid = session.get('user_id')
+    filter_meta = {"session_id": uid} if uid else None
+    
+    sources = store.get_sources(filter_metadata=filter_meta)
     
     # Obtener estadísticas por PDF
     pdf_stats = []
     for source in sources:
         # Contar chunks por fuente
-        results = store.search(source, n_results=100)
+        # Usa count_filtered para ser más preciso si se implementa, 
+        # o search simple filtrado
+        results = store.search(source, n_results=100, filter_metadata=filter_meta)
         chunk_count = len([r for r in results if r.metadata.get('source_file') == source])
         pdf_stats.append({
             'name': source,
@@ -648,7 +675,7 @@ def list_pdfs():
     
     return jsonify({
         'pdfs': pdf_stats,
-        'total_chunks': store.count
+        'total_chunks': store.count_filtered(filter_meta)
     })
 
 
@@ -658,8 +685,12 @@ def delete_pdf(pdf_name):
     try:
         store = get_store()
         
+        # 🔒 PRIVACY FIX: Delete with session ownership
+        uid = session.get('user_id')
+        filter_meta = {"session_id": uid} if uid else None
+        
         # Usar el método delete_by_source del VectorStoreManager
-        deleted_count = store.delete_by_source(pdf_name)
+        deleted_count = store.delete_by_source(pdf_name, filter_metadata=filter_meta)
         
         if deleted_count > 0:
             # Resetear store para refrescar count

@@ -131,6 +131,11 @@ class VectorStoreManager:
     def count(self) -> int:
         """Retorna el número de documentos en la colección."""
         return self._collection.count()
+
+    def count_filtered(self, filter_metadata: dict) -> int:
+        """Retorna conteo filtrado (ej: por usuario)"""
+        res = self._collection.get(where=filter_metadata, include=[])
+        return len(res["ids"]) if res["ids"] else 0
     
     def add_chunks(
         self, 
@@ -294,7 +299,7 @@ class VectorStoreManager:
             logger.error(f"Error obteniendo documento {chunk_id}: {e}")
             return None
     
-    def delete_by_source(self, source_file: str) -> int:
+    def delete_by_source(self, source_file: str, filter_metadata: Optional[dict] = None) -> int:
         """
         Elimina todos los chunks de un archivo fuente.
         
@@ -302,14 +307,20 @@ class VectorStoreManager:
         
         Args:
             source_file: Nombre del archivo fuente
+            filter_metadata: Filtros adicionales (ej: session_id)
             
         Returns:
             Número de documentos eliminados
         """
         try:
             # Buscar IDs de documentos del archivo
+            # Match source_file AND extra filters
+            where = {"source_file": source_file}
+            if filter_metadata:
+                where.update(filter_metadata)
+
             results = self._collection.get(
-                where={"source_file": source_file},
+                where=where,
                 include=[]
             )
             
@@ -342,7 +353,7 @@ class VectorStoreManager:
         except Exception as e:
             logger.error(f"Error eliminando todos los documentos: {e}")
     
-    def get_sources(self) -> list[str]:
+    def get_sources(self, filter_metadata: Optional[dict] = None) -> list[str]:
         """
         Retorna lista de archivos fuente únicos en la colección.
         
@@ -350,7 +361,10 @@ class VectorStoreManager:
             Lista de nombres de archivos fuente
         """
         try:
-            results = self._collection.get(include=["metadatas"])
+            results = self._collection.get(
+                where=filter_metadata,
+                include=["metadatas"]
+            )
             
             sources = set()
             if results["metadatas"]:
@@ -364,7 +378,7 @@ class VectorStoreManager:
             logger.error(f"Error obteniendo fuentes: {e}")
             return []
     
-    def get_stats(self) -> dict:
+    def get_stats(self, filter_metadata: Optional[dict] = None) -> dict:
         """
         Retorna estadísticas de la colección.
         
@@ -372,7 +386,10 @@ class VectorStoreManager:
             Dict con estadísticas
         """
         try:
-            results = self._collection.get(include=["metadatas"])
+            results = self._collection.get(
+                where=filter_metadata,
+                include=["metadatas"]
+            )
             
             total_tokens = 0
             sources = set()

@@ -131,6 +131,46 @@
             margin-top: 16px;
         }
 
+        /* Sidebar functions (mobile tabs) */
+        .sidebar-functions {
+            display: none;
+            /* Hidden on desktop, shown on mobile */
+            margin-bottom: 20px;
+        }
+
+        .sidebar-func-btn {
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 6px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.95rem;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-func-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--primary);
+        }
+
+        .sidebar-func-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .sidebar-divider {
+            display: none;
+            /* Hidden on desktop */
+            height: 1px;
+            background: var(--border);
+            margin: 20px 0;
+        }
+
         .chat-item {
             padding: 14px 16px;
             background: transparent;
@@ -300,6 +340,77 @@
             margin-top: 12px;
             padding-top: 12px;
             border-top: 1px solid var(--border);
+        }
+
+        /* Compact chat input bar */
+        .chat-input-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 25px;
+            padding: 8px 12px;
+            margin-top: 15px;
+        }
+
+        .chat-input-bar input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            font-size: 1rem;
+            padding: 8px 12px;
+            outline: none;
+            text-align: center;
+        }
+
+        .chat-input-bar input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            padding: 0;
+        }
+
+        .icon-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--primary);
+            color: var(--text-primary);
+            transform: scale(1.05);
+        }
+
+        .send-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: none;
+            color: white;
+            font-size: 1.3rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            padding: 0;
+        }
+
+        .send-btn:hover {
+            background: var(--primary-light);
+            transform: scale(1.05);
         }
 
         .input-group {
@@ -644,48 +755,73 @@
             font-size: 0.9rem;
         }
 
-        /* Theme Toggle Button */
+        /* Modern Theme Toggle Button */
         .theme-toggle {
             position: fixed;
             top: 20px;
             right: 20px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--bg-card);
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-hover) 100%);
             border: 1px solid var(--border);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             z-index: 1000;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: var(--shadow);
+            overflow: hidden;
         }
 
         .theme-toggle:hover {
-            transform: scale(1.1);
+            transform: scale(1.08) rotate(15deg);
             border-color: var(--primary);
+            box-shadow: 0 8px 25px rgba(229, 0, 0, 0.25);
         }
 
-        /* Mobile Menu Button */
+        .theme-toggle .icon {
+            transition: transform 0.5s ease, opacity 0.3s ease;
+        }
+
+        /* Light theme toggle styles */
+        [data-theme="light"] .theme-toggle {
+            background: linear-gradient(135deg, #FFF9E6 0%, #FFE4B5 100%);
+            border-color: #FFC107;
+        }
+
+        [data-theme="light"] .theme-toggle:hover {
+            box-shadow: 0 8px 25px rgba(255, 193, 7, 0.35);
+        }
+
+        /* Modern Mobile Menu Button */
         .mobile-menu-btn {
             display: none;
             position: fixed;
-            top: 20px;
-            left: 20px;
-            width: 50px;
-            height: 50px;
+            top: 16px;
+            left: 16px;
+            width: 48px;
+            height: 48px;
             border-radius: 12px;
             background: var(--primary);
             border: none;
             cursor: pointer;
-            z-index: 1001;
+            z-index: 10002;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(229, 0, 0, 0.5);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mobile-menu-btn:hover,
+        .mobile-menu-btn:active {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(229, 0, 0, 0.6);
         }
 
         .mobile-menu-btn span {
@@ -709,6 +845,12 @@
             transform: rotate(-45deg) translate(6px, -6px);
         }
 
+        /* Hide input bar when sidebar is open */
+        .sidebar.active~.main-content .chat-input-bar,
+        body:has(.sidebar.active) .chat-input-bar {
+            display: none !important;
+        }
+
         /* Sidebar Overlay (mobile) */
         .sidebar-overlay {
             display: none;
@@ -717,10 +859,17 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 9998;
             opacity: 0;
             transition: opacity 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Hide menu and theme toggle when sidebar is open */
+        body.sidebar-visible .mobile-menu-btn,
+        body.sidebar-visible .theme-toggle {
+            display: none !important;
         }
 
         .sidebar-overlay.active {
@@ -762,6 +911,23 @@
             50% {
                 transform: scale(1.02);
             }
+        }
+
+        /* Base styles for PDF Item (Desktop) */
+        .pdf-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .pdf-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
         .tab-content.active {
@@ -810,7 +976,9 @@
             .sidebar {
                 transform: translateX(-100%);
                 transition: transform 0.3s ease;
-                z-index: 1000;
+                z-index: 9999;
+                width: 85%;
+                max-width: 300px;
             }
 
             .sidebar.active {
@@ -818,105 +986,469 @@
             }
 
             .sidebar-overlay {
+                display: none;
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+            /* Enable native scroll on mobile */
+            html,
+            body {
+                overflow-y: auto !important;
+                overflow-x: hidden;
+                height: auto;
+                min-height: 100vh;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            body {
                 display: block;
             }
 
             .main-content {
                 margin-left: 0;
+                padding-bottom: 100px;
+                /* Space for fixed input bar */
+                min-height: 100vh;
             }
 
             .theme-toggle {
-                top: 20px;
-                right: 80px;
+                top: 16px;
+                right: 16px;
+                width: 48px;
+                height: 48px;
+                font-size: 1.2rem;
+                z-index: 10001;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+                top: 16px;
+                left: 16px;
+                width: 48px;
+                height: 48px;
+            }
+
+            .mobile-menu-btn span {
+                display: block !important;
+                width: 24px !important;
+                height: 3px !important;
+                background: white !important;
+                visibility: visible !important;
             }
 
             header h1 {
-                font-size: 1.8rem;
-                margin-top: 60px;
+                font-size: 1.5rem;
+                margin-top: 70px;
             }
 
+            header p {
+                font-size: 0.85rem;
+            }
+
+            /* Hide tabs on mobile - use sidebar instead */
             .tabs {
-                flex-wrap: wrap;
-                gap: 8px;
-                padding: 8px;
+                display: none !important;
+            }
+
+            /* Show sidebar functions on mobile */
+            .sidebar-functions {
+                display: block;
+            }
+
+            .sidebar-divider {
+                display: block;
             }
 
             .tab-btn {
-                padding: 10px 14px;
-                font-size: 0.8rem;
+                padding: 10px 12px;
+                font-size: 0.75rem;
+                flex-shrink: 0;
+                min-height: 44px;
+                /* Touch target */
             }
 
             .tab-content {
-                padding: 20px;
+                padding: 15px;
+                background: transparent;
+                border: none;
             }
 
+            /* Simple chat layout for mobile - no scroll restrictions */
+            #chat.active {
+                display: block;
+                padding: 15px;
+                padding-bottom: 20px;
+            }
+
+            /* Chat messages - natural height */
             #chat-messages {
-                height: 350px;
+                height: auto !important;
+                min-height: auto;
+                max-height: none !important;
+                overflow: visible !important;
+                background: transparent;
+                border: none;
+                padding: 10px 0;
             }
 
+            /* Flat messages - with colored backgrounds */
             .message {
-                margin-left: 5% !important;
-                margin-right: 5% !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                padding: 16px 14px;
+                font-size: 0.95rem;
+                border-radius: 12px;
+                max-width: 100%;
+                margin-bottom: 12px;
+                line-height: 1.7;
+            }
+
+            .message.user {
+                background: var(--primary) !important;
+                color: white;
+                border-left: 4px solid var(--primary-dark);
+            }
+
+            .message.assistant {
+                background: var(--bg-hover) !important;
+                border-left: 4px solid var(--border);
+            }
+
+            .message:last-child {
+                margin-bottom: 0;
             }
 
             .input-group {
                 flex-direction: column;
+                gap: 10px;
+            }
+
+            /* Only fix input group for chat tab */
+            #chat .input-group {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: var(--bg-card);
+                padding: 12px 15px;
+                border-top: 1px solid var(--border);
+                z-index: 100;
+            }
+
+            .input-group input {
+                width: 100%;
+                padding: 14px;
+                font-size: 16px;
+                /* Prevents iOS zoom */
+                min-height: 48px;
+                border-radius: 8px;
             }
 
             .input-group button {
                 width: 100%;
+                min-height: 48px;
+                font-size: 1rem;
+            }
+
+            /* Compact chat input bar mobile */
+            .chat-input-bar {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                border-radius: 0;
+                border: none;
+                border-top: 2px solid var(--border);
+                padding: 12px 15px;
+                z-index: 10000;
+                background: var(--bg-card);
+                pointer-events: auto;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+                box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            }
+
+            .chat-input-bar * {
+                pointer-events: auto;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .chat-input-bar input,
+            #correct input,
+            #correct textarea {
+                font-size: 16px !important;
+                /* Prevents iOS zoom */
+                -webkit-appearance: none;
+                appearance: none;
+                border-radius: 12px;
+                padding: 12px 16px;
+                background: var(--bg-dark);
+                border: 1px solid var(--border);
+                color: var(--text-primary);
+                min-height: 44px;
+            }
+
+            #correct textarea {
+                height: 120px;
+                resize: vertical;
+            }
+
+            .chat-input-bar input:focus {
+                outline: none;
+                border-color: var(--primary);
+            }
+
+            .icon-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 1.1rem;
+                flex-shrink: 0;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .send-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 1.2rem;
+                flex-shrink: 0;
+                -webkit-tap-highlight-color: transparent;
             }
 
             .flashcard {
                 width: 100%;
-                max-width: 350px;
-                height: 250px;
+                max-width: 100%;
+                height: 320px;
+                /* Increased height for mobile content */
+                margin: 0 auto;
+                perspective: 1000px;
             }
 
             .flashcard-text {
                 font-size: 1rem;
+                padding: 15px;
             }
 
             .flashcard-nav {
                 flex-wrap: wrap;
+                gap: 8px;
             }
 
             .flashcard-nav button {
-                padding: 12px 20px;
+                padding: 12px 15px;
                 font-size: 0.85rem;
+                flex: 1 1 45%;
+                /* Two buttons per row on small mobile */
+                min-height: 48px;
+                border-radius: 10px;
+                touch-action: manipulation;
+            }
+
+            .tab-btn,
+            .sidebar-func-btn,
+            button {
+                touch-action: manipulation;
+                /* Improves touch response */
             }
 
             .exam-controls {
                 flex-direction: column;
-                gap: 12px;
+                gap: 10px;
+            }
+
+            .exam-controls select,
+            .exam-controls button {
+                width: 100%;
+                min-height: 48px;
+                font-size: 1rem;
             }
 
             .question-card {
-                padding: 20px;
+                padding: 15px;
+            }
+
+            .question-text {
+                font-size: 0.95rem;
+            }
+
+            .option {
+                padding: 14px;
+                font-size: 0.95rem;
+                min-height: 52px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 8px;
+                background: rgba(255, 255, 255, 0.03);
+                border-radius: 10px;
+            }
+
+            .option input[type="radio"] {
+                width: 24px;
+                height: 24px;
+                flex-shrink: 0;
+            }
+
+            /* Upload zone mobile */
+            .upload-zone {
+                padding: 30px 20px;
+            }
+
+            .upload-zone p {
+                font-size: 0.9rem;
+            }
+
+            /* PDF list mobile */
+            .pdf-item {
+                flex-direction: column;
+                gap: 12px;
+                align-items: stretch;
+                padding: 15px;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 12px;
+                margin-bottom: 12px;
+            }
+
+            .pdf-item button {
+                width: 100%;
+                min-height: 44px;
+            }
+
+            .pdf-info {
+                width: 100%;
+                word-break: break-all;
             }
         }
 
         /* Responsive - Small Mobile */
         @media (max-width: 480px) {
             .container {
-                padding: 15px;
+                padding: 10px;
             }
 
             header h1 {
-                font-size: 1.5rem;
+                font-size: 1.3rem;
             }
 
             .tabs {
-                gap: 6px;
+                gap: 4px;
             }
 
             .tab-btn {
-                padding: 8px 12px;
-                font-size: 0.75rem;
+                padding: 8px 10px;
+                font-size: 0.7rem;
             }
 
             .flashcard {
-                height: 220px;
+                height: 240px;
+            }
+
+            .flashcard-text {
+                font-size: 0.9rem;
+            }
+
+            #chat-messages {
+                height: calc(100vh - 400px);
+            }
+
+            .main-content {
+                padding-bottom: 100px;
+            }
+
+            /* Smaller icons on very small screens */
+            .chat-input-bar {
+                padding: 10px 12px;
+                gap: 6px;
+            }
+
+            .chat-input-bar input {
+                padding: 10px 14px;
+                font-size: 16px !important;
+                /* Still 16px to prevent zoom */
+            }
+
+            .icon-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+                flex-shrink: 0;
+            }
+
+            .send-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1.1rem;
+                flex-shrink: 0;
+            }
+
+            .theme-toggle {
+                width: 44px;
+                height: 44px;
+                font-size: 1rem;
+            }
+
+            .mobile-menu-btn {
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Extra small screens (320px-360px) */
+        @media (max-width: 360px) {
+            .chat-input-bar {
+                padding: 6px 8px;
+                gap: 3px;
+                width: 100%;
+                left: 0;
+                right: 0;
+            }
+
+            .icon-btn {
+                width: 34px;
+                height: 34px;
+                font-size: 0.85rem;
+            }
+
+            .send-btn {
+                width: 38px;
+                height: 38px;
+                font-size: 1rem;
+            }
+
+            .chat-input-bar input {
+                padding: 8px 10px;
+                font-size: 16px !important;
+                min-width: 0;
+                /* Allows input to shrink below default */
+            }
+
+            header h1 {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Even smaller screens (e.g. 320px) */
+        @media (max-width: 320px) {
+            .chat-input-bar {
+                padding: 5px 6px;
+                gap: 2px;
+            }
+
+            .icon-btn {
+                width: 32px;
+                height: 32px;
+            }
+
+            .send-btn {
+                width: 36px;
+                height: 36px;
+            }
+
+            .chat-input-bar input {
+                padding: 6px 8px;
+                font-size: 16px !important;
             }
         }
     </style>
@@ -931,15 +1463,43 @@
     </button>
 
     <!-- THEME TOGGLE -->
-    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">
+        <span class="icon" id="theme-icon">◐</span>
+    </button>
 
     <!-- SIDEBAR OVERLAY (mobile) -->
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobileMenu()"></div>
 
     <!-- SIDEBAR -->
     <div class="sidebar" id="sidebar">
-        <h3>💬 Conversaciones</h3>
-        <button class="sidebar-btn" onclick="createNewChat()">➕ Nuevo Chat</button>
+        <!-- Mobile: Function tabs -->
+        <div class="sidebar-functions">
+            <button class="sidebar-func-btn active" onclick="showTab('chat'); closeMobileMenu()">
+                Preguntar
+            </button>
+            <button class="sidebar-func-btn" onclick="showTab('flashcards'); closeMobileMenu()">
+                Flashcards
+            </button>
+            <button class="sidebar-func-btn" onclick="showTab('exam'); closeMobileMenu()">
+                Examen
+            </button>
+            <button class="sidebar-func-btn" onclick="showTab('correct'); closeMobileMenu()">
+                Corregir
+            </button>
+            <button class="sidebar-func-btn" onclick="showTab('manage'); closeMobileMenu()">
+                PDFs
+            </button>
+            <button class="sidebar-func-btn" onclick="showTab('upload'); closeMobileMenu()">
+                Subir
+            </button>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <!-- Chat history -->
+        <!-- Chat history -->
+        <h3>Conversaciones</h3>
+        <button class="sidebar-btn" onclick="createNewChat()">Nuevo Chat</button>
         <div class="chat-list" id="chat-list">
             <!-- Chat sessions will be listed here -->
         </div>
@@ -954,12 +1514,12 @@
             </header>
 
             <div class="tabs">
-                <button class="tab-btn active" onclick="showTab('chat')">💬 Preguntar</button>
-                <button class="tab-btn" onclick="showTab('flashcards')">📇 Flashcards</button>
-                <button class="tab-btn" onclick="showTab('exam')">📋 Examen</button>
-                <button class="tab-btn" onclick="showTab('correct')">✍️ Corregir</button>
-                <button class="tab-btn" onclick="showTab('manage')">🗂️ PDFs</button>
-                <button class="tab-btn" onclick="showTab('upload')">📤 Subir</button>
+                <button class="tab-btn active" onclick="showTab('chat')">Preguntar</button>
+                <button class="tab-btn" onclick="showTab('flashcards')">Flashcards</button>
+                <button class="tab-btn" onclick="showTab('exam')">Examen</button>
+                <button class="tab-btn" onclick="showTab('correct')">Corregir</button>
+                <button class="tab-btn" onclick="showTab('manage')">PDFs</button>
+                <button class="tab-btn" onclick="showTab('upload')">Subir</button>
             </div>
 
             <!-- CHAT TAB -->
@@ -969,18 +1529,30 @@
                         <p>¡Hola! Soy tu tutor de IA. Pregúntame sobre el contenido de tus PDFs.</p>
                     </div>
                 </div>
-                <div class="input-group">
+
+                <!-- Compact input bar with icons -->
+                <div class="chat-input-bar">
+                    <button onclick="clearChat()" class="icon-btn" title="Limpiar chat">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                            </path>
+                        </svg>
+                    </button>
+                    <button onclick="exportChat()" class="icon-btn" title="Exportar chat">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                    </button>
                     <input type="text" id="question-input" placeholder="Escribe tu pregunta..."
-                        onkeypress="if(event.key==='Enter')sendQuestion()">
-                    <button onclick="sendQuestion()">Enviar</button>
+                        onkeypress="if(event.key==='Enter')sendQuestion()" autocomplete="off">
+                    <button onclick="sendQuestion()" class="send-btn" title="Enviar">➤</button>
                 </div>
-                <div style="display:flex; gap:10px; margin-top:15px; justify-content:center;">
-                    <button onclick="clearChat()" style="background:rgba(255,255,255,0.1); padding:10px 20px;">🗑️
-                        Limpiar
-                        Chat</button>
-                    <button onclick="exportChat()" style="background:rgba(255,255,255,0.1); padding:10px 20px;">💾
-                        Exportar</button>
-                </div>
+
                 <div id="chat-loading" class="loading">
                     <div class="spinner"></div>
                     <p>Buscando en el material...</p>
@@ -998,13 +1570,13 @@
                     </select>
                     <label>Dificultad:</label>
                     <select id="exam-difficulty">
-                        <option value="facil">😊 Fácil</option>
-                        <option value="medio">🤔 Medio</option>
-                        <option value="dificil" selected>😰 Difícil</option>
-                        <option value="extremo">💀 Extremo</option>
+                        <option value="facil">Fácil</option>
+                        <option value="medio">Medio</option>
+                        <option value="dificil" selected>Difícil</option>
+                        <option value="extremo">Extremo</option>
                     </select>
-                    <button onclick="generateExam()">📝 Generar Examen</button>
-                    <button onclick="gradeExam()" id="grade-btn" style="display:none;">✅ Calificar</button>
+                    <button id="btn-generate-exam">Generar Examen</button>
+                    <button onclick="gradeExam()" id="grade-btn" style="display:none;">Calificar</button>
                 </div>
                 <div id="exam-loading" class="loading">
                     <div class="spinner"></div>
@@ -1016,14 +1588,13 @@
             <!-- FLASHCARDS TAB -->
             <div id="flashcards" class="tab-content">
                 <div class="flashcard-controls">
-                    <label>Cantidad:</label>
+                    <label>Número de tarjetas:</label>
                     <select id="num-cards">
-                        <option value="5">5</option>
-                        <option value="10" selected>10</option>
+                        <option value="5" selected>5</option>
+                        <option value="10">10</option>
                         <option value="15">15</option>
-                        <option value="20">20</option>
                     </select>
-                    <button onclick="generateFlashcards()">📇 Generar Flashcards</button>
+                    <button id="btn-generate-flashcards">Generar Flashcards</button>
                 </div>
                 <div id="flashcard-loading" class="loading">
                     <div class="spinner"></div>
@@ -1046,10 +1617,10 @@
                         </div>
                     </div>
                     <div class="flashcard-nav">
-                        <button onclick="prevCard()">⬅️ Anterior</button>
+                        <button onclick="prevCard()">Anterior</button>
                         <button onclick="markKnown()" style="background: #28a745;">✓ Lo sé</button>
                         <button onclick="markUnknown()" style="background: #dc3545;">✗ Repasar</button>
-                        <button onclick="nextCard()">Siguiente ➡️</button>
+                        <button onclick="nextCard()">Siguiente</button>
                     </div>
                     <div class="flashcard-progress">
                         <span id="card-counter">1 / 10</span>
@@ -1060,9 +1631,9 @@
                     </div>
                     <div id="flashcard-complete"
                         style="display:none; text-align:center; margin-top:30px; padding:30px; background:rgba(102,126,234,0.2); border-radius:15px;">
-                        <h2>🎉 ¡Terminaste!</h2>
+                        <h2>¡Terminaste!</h2>
                         <p id="final-stats" style="font-size:1.2rem; margin:20px 0;"></p>
-                        <button onclick="generateFlashcards()" style="margin-top:15px;">🔄 Generar Nuevas
+                        <button onclick="generateFlashcards()" style="margin-top:15px;">Generar Nuevas
                             Flashcards</button>
                     </div>
                 </div>
@@ -1071,9 +1642,9 @@
             <!-- SUMMARY TAB -->
             <div id="summary" class="tab-content">
                 <div style="text-align:center; margin-bottom:20px;">
-                    <h3>📝 Resumen Completo del Material</h3>
+                    <h3>Resumen Completo del Material</h3>
                     <p>Genera un resumen exhaustivo y detallado de todos tus PDFs</p>
-                    <button onclick="generateSummary()" style="margin-top:15px;">📝 Generar Resumen Completo</button>
+                    <button onclick="generateSummary()" style="margin-top:15px;">Generar Resumen Completo</button>
                 </div>
                 <div id="summary-loading" class="loading">
                     <div class="spinner"></div>
@@ -1087,7 +1658,7 @@
             <!-- IMAGE CORRECTION TAB -->
             <div id="correct" class="tab-content">
                 <div style="text-align:center; margin-bottom:20px;">
-                    <h3>✍️ Corrección de Soluciones</h3>
+                    <h3>Corrección de Soluciones</h3>
                     <p>Describe tu solución o sube una imagen para recibir feedback</p>
                 </div>
                 <div style="max-width:600px; margin:0 auto;">
@@ -1105,7 +1676,7 @@
                     <div class="upload-zone" onclick="document.getElementById('correction-image').click()"
                         style="padding:30px;">
                         <input type="file" id="correction-image" accept="image/*" style="display:none;">
-                        <p>📷 Click para subir imagen</p>
+                        <p>Click para subir imagen</p>
                     </div>
                     <p id="correction-image-name" style="margin-top:10px; color:#aaa;"></p>
 
@@ -1124,9 +1695,9 @@
             <!-- PDF MANAGEMENT TAB -->
             <div id="manage" class="tab-content">
                 <div style="text-align:center; margin-bottom:20px;">
-                    <h3>🗂️ Gestión de PDFs Indexados</h3>
+                    <h3>Gestión de PDFs Indexados</h3>
                     <p>Ver y eliminar documentos de la base de datos</p>
-                    <button onclick="loadPdfList()" style="margin-top:15px;">🔄 Actualizar Lista</button>
+                    <button onclick="loadPdfList()" style="margin-top:15px;">Actualizar Lista</button>
                 </div>
                 <div id="pdf-loading" class="loading">
                     <div class="spinner"></div>
@@ -1141,7 +1712,7 @@
             <div id="upload" class="tab-content">
                 <div class="upload-zone" onclick="document.getElementById('file-input').click()">
                     <input type="file" id="file-input" accept=".pdf" onchange="uploadFile()">
-                    <h3>📄 Arrastra tu PDF aquí o haz clic</h3>
+                    <h3>Arrastra tu PDF aquí o haz clic</h3>
                     <p>Solo archivos PDF</p>
                 </div>
                 <div id="upload-loading" class="loading">
@@ -1166,26 +1737,29 @@
             // ===== THEME TOGGLE =====
             function toggleTheme() {
                 const body = document.body;
-                const toggle = document.getElementById('theme-toggle');
+                const icon = document.getElementById('theme-icon');
 
                 if (body.getAttribute('data-theme') === 'light') {
                     body.removeAttribute('data-theme');
-                    toggle.textContent = '🌙';
+                    icon.textContent = '◐';
+                    icon.style.transform = 'rotate(0deg)';
                     localStorage.setItem('tutorIA_theme', 'dark');
                 } else {
                     body.setAttribute('data-theme', 'light');
-                    toggle.textContent = '☀️';
+                    icon.textContent = '◑';
+                    icon.style.transform = 'rotate(180deg)';
                     localStorage.setItem('tutorIA_theme', 'light');
                 }
             }
 
             function loadSavedTheme() {
                 const savedTheme = localStorage.getItem('tutorIA_theme');
-                const toggle = document.getElementById('theme-toggle');
+                const icon = document.getElementById('theme-icon');
 
                 if (savedTheme === 'light') {
                     document.body.setAttribute('data-theme', 'light');
-                    toggle.textContent = '☀️';
+                    icon.textContent = '◑';
+                    icon.style.transform = 'rotate(180deg)';
                 }
             }
 
@@ -1198,6 +1772,16 @@
                 sidebar.classList.toggle('active');
                 overlay.classList.toggle('active');
                 btn.classList.toggle('active');
+
+                // Toggle body class to hide input bar via CSS
+                document.body.classList.toggle('sidebar-visible');
+
+                // Prevent body scroll when sidebar is open on mobile
+                if (sidebar.classList.contains('active')) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = '';
+                }
             }
 
             function closeMobileMenu() {
@@ -1208,6 +1792,12 @@
                 sidebar.classList.remove('active');
                 overlay.classList.remove('active');
                 btn.classList.remove('active');
+
+                // Remove body class to show input bar
+                document.body.classList.remove('sidebar-visible');
+
+                // Re-enable body scroll
+                document.body.style.overflow = '';
             }
 
             // Load theme and chat sessions on page load
@@ -1333,10 +1923,30 @@
             }
 
             function showTab(tabId) {
+                // Remove active class from all tabs and buttons
                 document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.getElementById(tabId).classList.add('active');
-                event.target.classList.add('active');
+                document.querySelectorAll('.sidebar-func-btn').forEach(b => b.classList.remove('active'));
+
+                // Activate the selected tab content
+                const tabElement = document.getElementById(tabId);
+                if (tabElement) {
+                    tabElement.classList.add('active');
+                }
+
+                // Update desktop tab buttons
+                const desktopTabBtns = document.querySelectorAll('.tab-btn');
+                const tabNames = ['chat', 'flashcards', 'exam', 'correct', 'manage', 'upload'];
+                const tabIndex = tabNames.indexOf(tabId);
+                if (tabIndex !== -1 && desktopTabBtns[tabIndex]) {
+                    desktopTabBtns[tabIndex].classList.add('active');
+                }
+
+                // Update sidebar function buttons
+                const sidebarBtns = document.querySelectorAll('.sidebar-func-btn');
+                if (tabIndex !== -1 && sidebarBtns[tabIndex]) {
+                    sidebarBtns[tabIndex].classList.add('active');
+                }
             }
 
             async function sendQuestion() {
@@ -1347,6 +1957,9 @@
                 const messages = document.getElementById('chat-messages');
                 messages.innerHTML += `<div class="message user"><p>${question}</p></div>`;
                 input.value = '';
+
+                // Smooth scroll to bottom
+                smoothScrollToBottom(messages);
 
                 // Save to current chat
                 if (currentChatId && chatSessions[currentChatId]) {
@@ -1379,7 +1992,9 @@
                 </div>`;
 
                     messages.innerHTML += answerHtml;
-                    messages.scrollTop = messages.scrollHeight;
+
+                    // Smooth scroll to bottom after adding message
+                    smoothScrollToBottom(messages);
 
                     // Save to current chat
                     if (currentChatId && chatSessions[currentChatId]) {
@@ -1397,9 +2012,28 @@
                     MathJax.typesetPromise();
                 } catch (e) {
                     messages.innerHTML += `<div class="message assistant"><p>Error: ${e.message}</p></div>`;
+                    smoothScrollToBottom(messages);
                 }
 
                 document.getElementById('chat-loading').style.display = 'none';
+            }
+
+            // Smooth scroll helper for mobile
+            function smoothScrollToBottom(element) {
+                // Use smooth scroll behavior
+                if (element.scrollHeight > element.clientHeight) {
+                    element.scrollTo({
+                        top: element.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }
+                // Also scroll to last message on mobile (natural scroll)
+                setTimeout(() => {
+                    const lastMessage = element.lastElementChild;
+                    if (lastMessage) {
+                        lastMessage.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    }
+                }, 100);
             }
 
             function clearChat() {
@@ -1460,10 +2094,15 @@
 
                 container.innerHTML = '';
                 results.innerHTML = '';
-                document.getElementById('exam-loading').style.display = 'block';
+
+                const loadingDiv = document.getElementById('exam-loading');
+                if (loadingDiv) loadingDiv.style.display = 'block';
+                else console.error("Elemento exam-loading no encontrado");
+
                 document.getElementById('grade-btn').style.display = 'none';
 
                 try {
+                    console.log("Enviando petición fetch /exam...");
                     const response = await fetch('/exam', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -1595,11 +2234,18 @@
             // FLASHCARD FUNCTIONS
             async function generateFlashcards() {
                 const numCards = document.getElementById('num-cards').value;
-                document.getElementById('flashcard-loading').style.display = 'block';
+                console.log("Iniciando generación de flashcards...");
+
+                // Debug alert
+                const loadingInfo = document.getElementById('flashcard-loading');
+                if (loadingInfo) loadingInfo.style.display = 'block';
+                else alert("Error: Elemento loading no encontrado");
+
                 document.getElementById('flashcard-area').style.display = 'none';
                 document.getElementById('flashcard-complete').style.display = 'none';
 
                 try {
+                    console.log("Enviando petición fetch /flashcards...");
                     const response = await fetch('/flashcards', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -1609,7 +2255,9 @@
                     flashcards = data.cards || [];
 
                     if (flashcards.length === 0) {
-                        alert('No se pudieron generar flashcards. Intenta de nuevo.');
+                        console.error("Respuesta vacía del servidor para flashcards");
+                        alert('No se pudieron generar flashcards. El servidor devolvió una lista vacía. Intenta subir más PDFs o cambiar el número de tarjetas.');
+                        document.getElementById('flashcard-loading').style.display = 'none';
                         return;
                     }
 
@@ -1795,16 +2443,16 @@
                         return;
                     }
 
-                    let html = `<p style="margin-bottom:20px;">Total: <strong>${data.total_chunks}</strong> fragmentos indexados</p>`;
+                    let html = '';
 
                     data.pdfs.forEach(pdf => {
                         html += `
-                        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:15px 20px; border-radius:10px; margin-bottom:10px;">
-                            <div>
+                        <div class="pdf-item">
+                            <div class="pdf-info">
                                 <strong>📄 ${pdf.name}</strong>
-                                <span style="color:#aaa; margin-left:15px;">${pdf.chunks} fragmentos</span>
+                                <span style="color:#aaa;">${pdf.chunks} fragmentos</span>
                             </div>
-                            <button onclick="deletePdf('${pdf.name}')" style="background:#dc3545; padding:8px 15px;">🗑️ Eliminar</button>
+                            <button onclick="deletePdf('${pdf.name}')" style="background:#dc3545; padding:8px 15px; border-radius:5px; border:none; color:white;">Eliminar</button>
                         </div>
                     `;
                     });
@@ -1845,6 +2493,34 @@
                     loadPdfList();
                 }
             };
+        </script>
+
+        <!-- Mobile Touch Event Fixes -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                function attachTouchClick(id, handler) {
+                    const btn = document.getElementById(id);
+                    if (btn) {
+                        // Remove any previous onclick to be safe
+                        btn.onclick = null;
+
+                        // Touch start for immediate response
+                        btn.addEventListener('touchstart', function (e) {
+                            e.preventDefault(); // Prevent ghost clicks
+                            handler();
+                        }, { passive: false });
+
+                        // Click handler for desktop/mouse
+                        btn.addEventListener('click', function (e) {
+                            handler();
+                        });
+                    }
+                }
+
+                // Attach robust handlers
+                attachTouchClick('btn-generate-exam', generateExam);
+                attachTouchClick('btn-generate-flashcards', generateFlashcards);
+            });
         </script>
 </body>
 

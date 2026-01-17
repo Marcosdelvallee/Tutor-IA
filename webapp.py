@@ -79,10 +79,8 @@ def get_llm():
 
 # Modelos ordenados por tamaño de contexto (mayor a menor)
 GROQ_MODELS = [
-    {"name": "llama-3.1-8b-instant", "context": 131072},      # 128K - más contexto
-    {"name": "llama-3.3-70b-versatile", "context": 32768},    # 32K - principal
-    {"name": "mixtral-8x7b-32768", "context": 32768},         # 32K - alternativo
-    {"name": "gemma2-9b-it", "context": 8192},                # 8K - backup
+    {"name": "llama-3.1-8b-instant", "context": 131072},      # 128K - más contexto (Backup rápido)
+    {"name": "llama-3.3-70b-versatile", "context": 32768},    # 32K - Principal (Mejor calidad)
 ]
 
 def invoke_with_fallback(messages, preferred_model=None):
@@ -173,7 +171,11 @@ Responde de forma clara y usa LaTeX para todas las fórmulas matemáticas."""
     ]
     
     try:
-        response = llm.invoke(messages)
+        response, model_name = invoke_with_fallback(messages)
+        if not response:
+            return f"Error: No se pudo generar respuesta. {model_name}"
+            
+        print(f"🤖 Chat generado con modelo: {model_name}")
         return response.content
     except Exception as e:
         return f"Error: {str(e)}"
@@ -183,10 +185,18 @@ def generate_exam_questions(num_questions: int, question_type: str, difficulty: 
     from langchain_core.messages import HumanMessage, SystemMessage
     
     llm = get_llm()
+    llm = get_llm()
     if not llm:
         return []
     
     context, _ = search_context("conceptos principales métodos fórmulas teoremas", n_results=12)
+    
+    if not context or len(context.strip()) < 10:
+        print("⚠️ Advertencia: Contexto vacío o insuficiente.")
+        return [{'question': '⚠️ No hay contenido suficiente. Por favor sube un documento PDF primero.', 
+                 'options': ['Entendido', 'Subir PDF', 'Cancelar'], 
+                 'correct': 'Subir PDF', 
+                 'explanation': 'El sistema necesita material de origen para generar preguntas.'}]
     
     # Prompts por nivel de dificultad
     difficulty_prompts = {
@@ -280,24 +290,60 @@ REGLAS TÉCNICAS:
     ]
     
     try:
-        response = llm.invoke(messages)
+        response, model_name = invoke_with_fallback(messages)
+        if not response:
+             print("❌ Fallback falló en examen")
+             return [{'question': f'Error de servicio: {model_name}', 'options': ['Reintentar'], 'correct': 'Reintentar', 'explanation': 'Todos los modelos están ocupados.'}]
+
+        print(f"📝 Examen generado con modelo: {model_name}")
         content = response.content.strip()
         
-        # Clean markdown
+        # Strategy 1: Attempt direct JSON parsing
+        try:
+            return parse_exam_json(content)
+        except:
+            pass
+            
+        # Strategy 2: Clean markdown and try again
+        cleaned = content
         if "```json" in content:
-            content = content.split("```json")[1].split("```")[0]
+            cleaned = content.split("```json")[1].split("```")[0]
         elif "```" in content:
-            content = content.split("```")[1].split("```")[0]
+            cleaned = content.split("```")[1].split("```")[0]
+        cleaned = cleaned.strip()
         
-        content = content.strip()
-        if content.startswith("{"):
-            data = json.loads(content)
-            return data.get("questions", [])
-        else:
-            return json.loads(content)
+        try:
+            return parse_exam_json(cleaned)
+        except:
+            pass
+
+        # Strategy 3: Regex extraction (List)
+        import re
+        json_match = re.search(r'(\[.*\])', content, re.DOTALL)
+        if json_match:
+            try:
+                return parse_exam_json(json_match.group(1))
+            except:
+                pass
+        
+        print(f"❌ Failed to parse Exam JSON. Content: {content[:200]}...")
+        # Fallback question for parsing error
+        return [{'question': 'Error generando preguntas (Formato inválido). Intenta con menos dificultad.', 
+                 'options': ['Reintentar', 'Ver logs', 'Ayuda'], 
+                 'correct': 'Reintentar', 
+                 'explanation': f'El modelo generó una respuesta que no se pudo leer. Detalle: {content[:100]}...'}]
+
     except Exception as e:
-        print(f"Error: {e}")
-        return []
+        print(f"❌ Error generating exam: {e}")
+        return [{'question': f'Error del sistema: {str(e)}', 'options': ['Ok'], 'correct': 'Ok', 'explanation': 'Verifica la consola del servidor.'}]
+
+def parse_exam_json(text):
+    data = json.loads(text)
+    if isinstance(data, dict) and "questions" in data:
+        return data["questions"]
+    elif isinstance(data, list):
+        return data
+    raise ValueError("Invalid format")
 
 
 def generate_flashcards(num_cards: int):
@@ -311,9 +357,9 @@ def generate_flashcards(num_cards: int):
     
     context, _ = search_context("conceptos definiciones formulas metodos", n_results=10)
     
-    if not context:
+    if not context or len(context.strip()) < 10:
         print("Error: No hay contexto disponible")
-        return []
+        return [{'front': '⚠️ No hay contenido', 'back': 'Por favor sube PDFs para generar flashcards', 'category': 'Sistema'}]
     
     system_prompt = f"""Genera {num_cards} flashcards de estudio.
 
@@ -339,37 +385,56 @@ REGLAS:
     ]
     
     try:
-        response = llm.invoke(messages)
+        response, model_name = invoke_with_fallback(messages)
+        if not response:
+            print("❌ Fallback falló en flashcards")
+            return [{'front': 'Error de Servicio', 'back': f'No se pudo generar: {model_name}', 'category': 'Sistema'}]
+
+        print(f"📇 Flashcards generadas con modelo: {model_name}")
         content = response.content.strip()
         print(f"LLM Response (primeros 500 chars): {content[:500]}")
         
-        # Limpiar markdown
+        # Strategy 1: Direct JSON
+        try:
+            return json.loads(content)
+        except:
+            pass
+            
+        # Strategy 2: Markdown cleanup
+        cleaned = content
         if "```json" in content:
-            content = content.split("```json")[1].split("```")[0]
+            cleaned = content.split("```json")[1].split("```")[0]
         elif "```" in content:
-            parts = content.split("```")
-            if len(parts) >= 2:
-                content = parts[1]
-        
-        content = content.strip()
-        
-        # Asegurar que empieza con [
-        if not content.startswith("["):
-            # Buscar el inicio del array
-            idx = content.find("[")
-            if idx != -1:
-                content = content[idx:]
-        
-        result = json.loads(content)
-        print(f"Flashcards generadas: {len(result)}")
-        return result
-        
-    except json.JSONDecodeError as e:
-        print(f"JSON Error: {e}")
-        print(f"Content that failed: {content[:300] if content else 'empty'}")
+            cleaned = content.split("```")[1].split("```")[0]
+        cleaned = cleaned.strip()
+        try:
+            return json.loads(cleaned)
+        except:
+            pass
+            
+        # Strategy 3: Regex
+        import re
+        json_match = re.search(r'(\[.*\])', content, re.DOTALL)
+        if json_match:
+            try:
+                return json.loads(json_match.group(1))
+            except:
+                pass
+
+        # Strategy 4: Python literal eval (last resort)
+        try:
+            import ast
+            result = ast.literal_eval(content)
+            if isinstance(result, list):
+                return result
+        except:
+            pass
+            
+        print(f"❌ Failed to parse Flashcards JSON. Content context: {content[:200]}...")
         return []
+            
     except Exception as e:
-        print(f"Error flashcards: {e}")
+        print(f"❌ Error flashcards: {e}")
         return []
 
 
@@ -549,10 +614,13 @@ Si el estudiante describe su solución en texto, corrige específicamente eso.""
     ]
     
     try:
-        response = llm.invoke(messages)
+        response, model_name = invoke_with_fallback(messages)
+        if not response:
+            return jsonify({'error': f'Error generando corrección: {model_name}'})
+            
         return jsonify({
             'feedback': response.content,
-            'note': 'Nota: Para corrección precisa de imágenes se requiere un modelo multimodal (GPT-4V o Gemini Vision)'
+            'note': f'Generado con {model_name}. Para corrección precisa se requiere visión multimodal.'
         })
     except Exception as e:
         return jsonify({'error': str(e)})
